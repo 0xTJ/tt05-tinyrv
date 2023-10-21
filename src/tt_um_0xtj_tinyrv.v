@@ -9,8 +9,11 @@ module tt_um_0xtj_tinyrv (
     input  wire       rst_n     // reset_n - low to reset
 );
 
-    always @(posedge clk) begin
+    assign uo_out = 8'h0;
+    assign uio_out = 8'h0;
+    assign uio_oe = 8'h0;
 
+    always @(posedge clk) begin
     end
 
 endmodule
