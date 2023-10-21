@@ -9,4 +9,8 @@ module tt_um_0xtj_tinyrv (
     input  wire       rst_n     // reset_n - low to reset
 );
 
+    always @(posedge clk) begin
+
+    end
+
 endmodule
