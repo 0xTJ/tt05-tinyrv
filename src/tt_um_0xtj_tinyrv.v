@@ -19,9 +19,9 @@ module tt_um_0xtj_tinyrv (
 
     // Split components of intruction
     wire [2:0]  opcode;
-    wire [1:0]  rega;
-    wire [1:0]  regb;
-    wire [1:0]  regc;
+    wire [2:0]  rega;
+    wire [2:0]  regb;
+    wire [2:0]  regc;
     wire [15:0] simm;
     wire [15:0] imm;
     assign opcode     = instr[15:13];
@@ -29,7 +29,7 @@ module tt_um_0xtj_tinyrv (
     assign regb       = instr[9:7];
     assign regc       = instr[2:0];
     assign simm[5:0]  = instr[5:0];
-    assign simm[15:6] = instr[6];
+    assign simm[15:6] = {10{instr[6]}};
     assign imm[15:6]  = instr[9:0];
     assign imm[5:0]   = 6'b000000;
 
@@ -41,13 +41,6 @@ module tt_um_0xtj_tinyrv (
     wire       mux_tgt;
     wire       we_rf;
     wire       we_dmem;
-
-    wire [2:0] src1;
-    reg  [2:0] src2;
-    wire [2:0] tgt;
-    assign src1 = regb;
-    always @(*) src2 = mux_rf ? rega : regc;
-    assign tgt = rega;
 
     control control (
         .opcode   (opcode),
@@ -61,6 +54,14 @@ module tt_um_0xtj_tinyrv (
         .we_rf    (we_rf),
         .we_dmem  (we_dmem)
     );
+
+    // Make register file selectors
+    wire [2:0] src1;
+    reg  [2:0] src2;
+    wire [2:0] tgt;
+    assign src1 = regb;
+    always @(*) src2 = mux_rf ? rega : regc;
+    assign tgt = rega;
 
     register_file register_file (
         .src1       (src1),
