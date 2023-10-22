@@ -8,8 +8,7 @@ module tt_um_0xtj_tinyrv (
     input  wire       clk,      // clock
     input  wire       rst_n     // reset_n - low to reset
 );
-
-    assign uo_out = 8'h0;
+    assign uo_out = ui_in;
 
     reg [1:0] mux_phase;
 
@@ -25,12 +24,13 @@ module tt_um_0xtj_tinyrv (
         .rst_n      (rst_n)     // not reset
     );
 
-    always @(!rst_n) begin
-        mux_phase <= 0;
-    end
 
     always @(posedge clk) begin
-        mux_phase <= mux_phase + 1;
+        if (!rst_n) begin
+            mux_phase <= 0;
+        end else begin
+            mux_phase <= mux_phase + 1;
+        end
     end
 
 endmodule
