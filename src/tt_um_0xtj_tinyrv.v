@@ -9,17 +9,16 @@ module tt_um_0xtj_tinyrv (
     input  wire       rst_n     // reset_n - low to reset
 );
     assign uo_out = ui_in;
-
-    reg [1:0] mux_phase;
+    wire [7:0] test1;
+    wire [7:0] test2;
 
     register_file register_file (
-        .mux_phase  (mux_phase),
-        .rs1        (ui_in[3:0]),
-        .rs2        (ui_in[7:4]),
-        .rd         (ui_in[3:0]),
-        .rs1_dat    (uio_out),
-        .rs2_dat    (uio_oe),
-        .rd_dat     (uio_in),
+        .src1       (ui_in[2:0]),
+        .src2       (ui_in[5:3]),
+        .tgt        (ui_in[7:5]),
+        .src1_dat   ({uio_out,test1}),
+        .src2_dat   ({uio_oe,test2}),
+        .tgt_dat    ({uio_in,uio_in}),
         .clk        (clk),      // clock
         .rst_n      (rst_n)     // not reset
     );
@@ -27,9 +26,7 @@ module tt_um_0xtj_tinyrv (
 
     always @(posedge clk) begin
         if (!rst_n) begin
-            mux_phase <= 0;
         end else begin
-            mux_phase <= mux_phase + 1;
         end
     end
 
