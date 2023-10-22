@@ -26,11 +26,8 @@ module register_file (
     end
     endgenerate
 
-    always @(rs1) begin
+    always @(negedge clk) begin
         rs1_dat <= reg_file[rs1][mux_phase];
-    end
-
-    always @(rs2) begin
         rs2_dat <= reg_file[rs2][mux_phase];
     end
 

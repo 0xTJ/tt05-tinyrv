@@ -10,8 +10,6 @@ module tt_um_0xtj_tinyrv (
 );
 
     assign uo_out = 8'h0;
-    assign uio_out = 8'h0;
-    assign uio_oe = 8'h0;
 
     reg [1:0] mux_phase;
 
