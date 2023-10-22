@@ -8,7 +8,7 @@ TOPLEVEL_LANG ?= verilog
 # normal simulation
 ifneq ($(GATES),yes)
 
-VERILOG_SOURCES += $(PWD)/tb.v $(PWD)/tt_um_0xtj_tinyrv.v
+VERILOG_SOURCES += $(PWD)/tb.v $(PWD)/tt_um_0xtj_tinyrv.v $(PWD)/register_file.v
 
 else
 
