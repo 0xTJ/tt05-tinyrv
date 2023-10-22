@@ -8,12 +8,28 @@ module tt_um_0xtj_tinyrv (
     input  wire       clk,      // clock
     input  wire       rst_n     // reset_n - low to reset
 );
-    assign uo_out = ui_in;
     wire [7:0] test1;
-    wire [7:0] test2;
 
-    wire [2:0] opcode;
-    wire       eq;
+    wire  [15:0] instr;
+    assign instr[15:8] = ui_in;
+    assign instr[7:0] = uio_in;
+
+    wire [2:0]  opcode;
+    wire [1:0]  rega;
+    wire [1:0]  regb;
+    wire [1:0]  regc;
+    wire [15:0] simm;
+    wire [15:0] imm;
+    wire        eq;
+
+    assign opcode     = instr[15:13];
+    assign rega       = instr[12:10];
+    assign regb       = instr[9:7];
+    assign regc       = instr[2:0];
+    assign simm[5:0]  = instr[5:0];
+    assign simm[15:6] = instr[6];
+    assign imm[15:6]  = instr[9:0];
+    assign imm[5:0]   = 6'b000000;
 
     localparam OPCODE_ADD  = 3'b000;
     localparam OPCODE_ADDI = 3'b001;
@@ -29,14 +45,30 @@ module tt_um_0xtj_tinyrv (
     localparam FUNC_ALU_PASS1 = 2'b10;
     localparam FUNC_ALU_EQ    = 2'b11;
 
-    reg  [1:0] func_alu;
-    wire       mux_alu1;
-    wire       mux_alu2;
-    wire       mux_pc;
-    wire       mux_rf;
-    wire       mux_tgt;
-    wire       we_rf;
-    wire       we_dmem;
+    localparam MUX_PC_NEXT   = 2'b01;
+    localparam MUX_PC_BRANCH = 2'b10;
+    localparam MUX_PC_JUMP   = 2'b11;
+
+    localparam MUX_TGT_ALU   = 2'b01;
+    localparam MUX_TGT_DMEM  = 2'b10;
+    localparam MUX_TGT_PC    = 2'b11;
+
+    wire [2:0] src1;
+    wire [2:0] src2;
+    wire [2:0] tgt;
+
+    assign src1 = regb;
+    assign src2 = mux_rf ? rega : regc;
+    assign tgt = rega;
+
+    reg [1:0] func_alu;
+    reg       mux_alu1;
+    reg       mux_alu2;
+    reg [1:0] mux_pc;
+    reg       mux_rf;
+    reg       mux_tgt;
+    reg       we_rf;
+    reg       we_dmem;
     
     always @(*) begin
         case (opcode)
@@ -49,15 +81,73 @@ module tt_um_0xtj_tinyrv (
             OPCODE_BEQ:  func_alu = FUNC_ALU_EQ;
             OPCODE_JALR: func_alu = FUNC_ALU_PASS1;
         endcase
+
+        case (opcode)
+            OPCODE_ADD:  mux_alu1 = 1'b0;
+            OPCODE_ADDI: mux_alu1 = 1'b0;
+            OPCODE_NAND: mux_alu1 = 1'b0;
+            OPCODE_LUI:  mux_alu1 = 1'b1;
+            OPCODE_LW:   mux_alu1 = 1'b0;
+            OPCODE_SW:   mux_alu1 = 1'b0;
+            OPCODE_BEQ:  mux_alu1 = 1'b0;
+            OPCODE_JALR: mux_alu1 = 1'b0;
+        endcase
+
+        case (opcode)
+            OPCODE_ADD:  mux_alu2 = 1'b0;
+            OPCODE_ADDI: mux_alu2 = 1'b1;
+            OPCODE_NAND: mux_alu2 = 1'b0;
+            OPCODE_LW:   mux_alu2 = 1'b1;
+            OPCODE_SW:   mux_alu2 = 1'b1;
+            OPCODE_BEQ:  mux_alu2 = 1'b0;
+        endcase
+
+        case (opcode)
+            OPCODE_BEQ:  mux_pc = eq ? MUX_PC_BRANCH : MUX_PC_NEXT;
+            OPCODE_JALR: mux_pc = MUX_PC_JUMP;
+            default:     mux_pc = MUX_PC_NEXT;
+        endcase
+
+        case (opcode)
+            OPCODE_ADD:  mux_rf = 1'b0;
+            OPCODE_NAND: mux_rf = 1'b0;
+            OPCODE_SW:   mux_rf = 1'b1;
+            OPCODE_BEQ:  mux_rf = 1'b1;
+        endcase
+
+        case (opcode)
+            OPCODE_ADD:  mux_tgt = MUX_TGT_ALU;
+            OPCODE_ADDI: mux_tgt = MUX_TGT_ALU;
+            OPCODE_NAND: mux_tgt = MUX_TGT_ALU;
+            OPCODE_LUI:  mux_tgt = MUX_TGT_ALU;
+            OPCODE_LW:   mux_tgt = MUX_TGT_DMEM;
+            OPCODE_JALR: mux_tgt = MUX_TGT_PC;
+        endcase
+
+        case (opcode)
+            OPCODE_ADD:  we_rf = 1'b1;
+            OPCODE_ADDI: we_rf = 1'b1;
+            OPCODE_NAND: we_rf = 1'b1;
+            OPCODE_LUI:  we_rf = 1'b1;
+            OPCODE_LW:   we_rf = 1'b1;
+            OPCODE_JALR: we_rf = 1'b1;
+            default:     we_rf = 1'b0;
+        endcase
+
+        case (opcode)
+            OPCODE_SW:   we_dmem = 1'b1;
+            default:     we_dmem = 1'b0;
+        endcase
     end
 
     register_file register_file (
-        .src1       (ui_in[2:0]),
-        .src2       (ui_in[5:3]),
-        .tgt        (ui_in[7:5]),
-        .src1_dat   ({uio_out,test1}),
-        .src2_dat   ({uio_oe,test2}),
-        .tgt_dat    ({uio_in,uio_in}),
+        .src1       (src1),
+        .src2       (src2),
+        .tgt        (tgt),
+        .src1_dat   ({uio_out,uio_oe}),
+        .src2_dat   ({uo_out,test1}),
+        .tgt_dat    ({ui_in,uio_in}),
+        .we         (we_rf),
         .clk        (clk),      // clock
         .rst_n      (rst_n)     // not reset
     );

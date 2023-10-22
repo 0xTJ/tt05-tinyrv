@@ -11,8 +11,8 @@ async def test_my_design(dut):
 
     dut.rst_n.value = 0 # low to reset
     await ClockCycles(dut.clk, 5)
-    dut.ui_in.value = 0xFF
-    dut.uio_in.value = 0xFF
+    dut.ui_in.value = 0x0F
+    dut.uio_in.value = 0x0F
     dut.ena.value = 1
     await ClockCycles(dut.clk, 5)
     dut.rst_n.value = 1 # take out of reset
