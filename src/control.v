@@ -6,7 +6,7 @@ module control (
     output reg        mux_alu2,
     output reg  [1:0] mux_pc,
     output reg        mux_rf,
-    output reg        mux_tgt,
+    output reg  [1:0] mux_tgt,
     output reg        we_rf,
     output reg        we_dmem
 );
