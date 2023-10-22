@@ -23,8 +23,11 @@ module register_file (
     end
     endgenerate
 
-    always @(negedge clk) begin
+    always @(src1) begin
         src1_dat <= reg_file_read[src1];
+    end
+
+    always @(src2) begin
         src2_dat <= reg_file_read[src2];
     end
 
