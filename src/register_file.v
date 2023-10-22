@@ -1,12 +1,13 @@
 module register_file (
-    input  wire [2:0] src1,
-    input  wire [2:0] src2,
-    input  wire [2:0] tgt,
+    input  wire [2:0]  src1,
+    input  wire [2:0]  src2,
+    input  wire [2:0]  tgt,
     output reg  [15:0] src1_dat,
     output reg  [15:0] src2_dat,
     input  wire [15:0] tgt_dat,
-    input  wire       clk,      // clock
-    input  wire       rst_n     // reset_n - low to reset
+    input  wire        we,
+    input  wire        clk,      // clock
+    input  wire        rst_n     // reset_n - low to reset
 );
 
     reg [15:0] reg_file_write [7:0];
@@ -24,12 +25,14 @@ module register_file (
     endgenerate
 
     always @(*) begin
-        src1_dat <= reg_file_read[src1];
-        src2_dat <= reg_file_read[src2];
+        src1_dat = reg_file_read[src1];
+        src2_dat = reg_file_read[src2];
     end
 
     always @(posedge clk) begin
-        reg_file_write[tgt] <= tgt_dat;
+        if (we) begin
+            reg_file_write[tgt] <= tgt_dat;
+        end
     end
 
 endmodule
