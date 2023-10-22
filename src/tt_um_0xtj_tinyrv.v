@@ -20,6 +20,10 @@ module tt_um_0xtj_tinyrv (
     assign instr[15:8] = ui_in;
     assign instr[7:0] = uio_in;
 
+    assign uo_out = instr[15:8];
+    assign uio_out = instr[15:8];
+    assign uio_oe = instr[15:8];
+
     reg [15:0] pc;
     reg [15:0] pc_plus_one;
     reg [15:0] pc_next;
