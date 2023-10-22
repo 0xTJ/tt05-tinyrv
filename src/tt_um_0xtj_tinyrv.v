@@ -20,9 +20,9 @@ module tt_um_0xtj_tinyrv (
     assign instr[15:8] = ui_in;
     assign instr[7:0] = uio_in;
 
-    assign uo_out = instr[15:8];
-    assign uio_out = instr[15:8];
-    assign uio_oe = instr[15:8];
+    assign uo_out = pc[15:8];
+    assign uio_out = src1_dat[15:8];
+    assign uio_oe = src2_dat[15:8];
 
     reg [15:0] pc;
     reg [15:0] pc_plus_one;
@@ -77,7 +77,7 @@ module tt_um_0xtj_tinyrv (
     );
 
     wire [15:0] dmem_data_out;
-    assign dmem_data_out = 15'b0;
+    assign dmem_data_out = {ui_in,uio_in};
 
     wire [15:0] src1_dat;
     wire [15:0] src2_dat;
