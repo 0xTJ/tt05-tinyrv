@@ -1,0 +1,56 @@
+[*]
+[*] GTKWave Analyzer v3.4.0 (w)1999-2022 BSI
+[*] Sat Nov  4 16:15:05 2023
+[*]
+[dumpfile] "/home/thomas/Documents/Projects/TinyTapeout/tt05-tinyrv/src/tb.vcd"
+[dumpfile_mtime] "Sat Nov  4 16:14:50 2023"
+[dumpfile_size] 4723
+[savefile] "/home/thomas/Documents/Projects/TinyTapeout/tt05-tinyrv/src/lpc.gtkw"
+[timestart] 0
+[size] 3438 1336
+[pos] -1 -1
+*-16.200001 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] tb.
+[treeopen] tb.tt_um_0xtj_tinyrv.
+[sst_width] 343
+[signals_width] 290
+[sst_expanded] 1
+[sst_vpaned_height] 413
+@420
+tb.tt_um_0xtj_tinyrv.lpc.CYCLE_ADDR
+tb.tt_um_0xtj_tinyrv.lpc.CYCLE_CYCTYPE_DIR
+tb.tt_um_0xtj_tinyrv.lpc.CYCLE_DATA
+tb.tt_um_0xtj_tinyrv.lpc.CYCLE_START
+tb.tt_um_0xtj_tinyrv.lpc.CYCLE_SYNC
+tb.tt_um_0xtj_tinyrv.lpc.CYCLE_TAR_0
+tb.tt_um_0xtj_tinyrv.lpc.CYCLE_TAR_1
+tb.tt_um_0xtj_tinyrv.lpc.CYCTYPE_MEMORY
+@22
+tb.tt_um_0xtj_tinyrv.lpc.addr[31:0]
+tb.tt_um_0xtj_tinyrv.lpc.cycle[3:0]
+tb.tt_um_0xtj_tinyrv.lpc.cycle_count_left[3:0]
+@28
+tb.tt_um_0xtj_tinyrv.lpc.cyctype[1:0]
+tb.tt_um_0xtj_tinyrv.lpc.dir
+tb.tt_um_0xtj_tinyrv.lpc.done
+tb.tt_um_0xtj_tinyrv.lpc.go
+@22
+tb.tt_um_0xtj_tinyrv.lpc.lad_in[3:0]
+@29
+tb.tt_um_0xtj_tinyrv.lpc.lad_oe
+@22
+tb.tt_um_0xtj_tinyrv.lpc.lad_out[3:0]
+@28
+tb.tt_um_0xtj_tinyrv.lpc.lclk
+tb.tt_um_0xtj_tinyrv.lpc.lframe
+tb.tt_um_0xtj_tinyrv.lpc.lreset
+@22
+tb.tt_um_0xtj_tinyrv.lpc.next_cycle[3:0]
+tb.tt_um_0xtj_tinyrv.lpc.next_cycle_count_left[3:0]
+@28
+tb.tt_um_0xtj_tinyrv.lpc.next_lframe
+@22
+tb.tt_um_0xtj_tinyrv.lpc.read_data[7:0]
+tb.tt_um_0xtj_tinyrv.lpc.write_data[7:0]
+[pattern_trace] 1
+[pattern_trace] 0

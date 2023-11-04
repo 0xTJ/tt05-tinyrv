@@ -2,43 +2,88 @@ import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import RisingEdge, FallingEdge, Timer, ClockCycles
 
-def set_instr(dut, val):
-    dut.ui_in.value = (val >> 8) & 0xFF
-    dut.uio_in.value = (val >> 0) & 0xFF
+# last_lframe = 1
+# last_lad = 0xF
+lframe = 0
+peri_lad = 0xF
+peri_lad_oe = 0x0
+
+def lpc_lframe(dut):
+    return ((dut.uo_out.value >> 0) & 0x1) != 0x1
+
+def lpc_lad(dut):
+    dut_lad = (dut.uio_out.value >> 0) & 0xF
+    dut_lad_oe = (dut.uio_oe.value >> 0) & 0xF
+    no_lad_oe = (~(dut_lad_oe | peri_lad_oe)) & 0xF
+    assert (dut_lad_oe & peri_lad_oe) == 0x0
+    return (dut_lad & dut_lad_oe) | (peri_lad & peri_lad_oe) | (0xF & no_lad_oe)
 
 @cocotb.test()
 async def test_my_design(dut):
     dut._log.info("start")
 
-    clock = Clock(dut.clk, 1, units="us")
+    clock = Clock(dut.clk, 30, units="ns")
     cocotb.start_soon(clock.start())
 
     dut.rst_n.value = 0 # low to reset
     await ClockCycles(dut.clk, 5)
-    set_instr(dut, 0x0F0F)
-    await ClockCycles(dut.clk, 5)
     dut.rst_n.value = 1 # take out of reset
 
-    await ClockCycles(dut.clk, 10)
-    set_instr(dut, 0b000_001_000_0000_000)
+    lad = lpc_lad(dut)
+
+    last_lad = lad
     await ClockCycles(dut.clk, 1)
-    set_instr(dut, 0b000_010_000_0000_000)
-    await ClockCycles(dut.clk, 1)
-    set_instr(dut, 0b000_011_000_0000_000)
-    await ClockCycles(dut.clk, 1)
-    set_instr(dut, 0b000_100_000_0000_000)
-    await ClockCycles(dut.clk, 1)
-    set_instr(dut, 0b000_101_000_0000_000)
-    await ClockCycles(dut.clk, 1)
-    set_instr(dut, 0b000_110_000_0000_000)
-    await ClockCycles(dut.clk, 1)
-    set_instr(dut, 0b000_111_000_0000_000)
-    await ClockCycles(dut.clk, 1)
-    set_instr(dut, 0b110_110_000_0010000)
-    await ClockCycles(dut.clk, 1)
-    set_instr(dut, 0b111_100_000_0000000)
-    await ClockCycles(dut.clk, 1)
-    set_instr(dut, 0b000_000_000_0000_000)
-    await ClockCycles(dut.clk, 10)
+    lad = lpc_lad(dut)
+    lframe = lpc_lframe(dut)
+
+    while not lframe:
+        last_lad = lad
+        await ClockCycles(dut.clk, 1)
+        lad = lpc_lad(dut)
+        lframe = lpc_lframe(dut)
+        
+    while lframe:
+        last_lad = lad
+        await ClockCycles(dut.clk, 1)
+        lad = lpc_lad(dut)
+        lframe = lpc_lframe(dut)
+
+    # Now we are after rising edge in CYCTYPE/DIR
+    assert ((lad >> 2) & 0x3) == 0b01   # Assert memory cycle
+    cyc_dir = ((lad >> 1) & 0x1)
+    assert ((lad >> 0) & 0x1) == 0b0    # Assert reserved bit is clear
+
+    addr = 0
+    for i in range(8):
+        last_lad = lad
+        await ClockCycles(dut.clk, 1)
+        lad = lpc_lad(dut)
+        lframe = lpc_lframe(dut)
+        assert lframe == False
+
+        addr <<= 4
+        addr |= lad
+
+    if cyc_dir == 0:
+        # Read
+        last_lad = lad
+        await ClockCycles(dut.clk, 1)
+        lad = lpc_lad(dut)
+        lframe = lpc_lframe(dut)
+        assert lframe == False
+
+        assert lad == 0xF
+
+    else:
+        # Write
+        data = 0
+        for i in range(2):
+            last_lad = lad
+            await ClockCycles(dut.clk, 1)
+            lad = lpc_lad(dut)
+            lframe = lpc_lframe(dut)
+            assert lframe == False
+
+            data |= (lad << (4 * i))
 
     dut._log.info("end")
