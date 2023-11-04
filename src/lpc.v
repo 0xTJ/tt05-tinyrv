@@ -104,7 +104,7 @@ module lpc (
         end
     end
 
-    always @(posedge lclk, lreset) begin
+    always @(posedge lclk) begin
         if (lreset == 1'b1) begin
             cycle <= CYCLE_START;
             cycle_count_left <= 4'h0;
