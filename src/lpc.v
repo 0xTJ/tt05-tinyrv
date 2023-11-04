@@ -159,7 +159,7 @@ module lpc (
             end
 
             CYCLE_TAR_0: begin
-                if (cycle_count_left == 0) lad_oe = 1'b0;
+                if (cycle_count_left == 0) lad_oe <= 1'b0;
                 else lad_out <= 4'b1111;
             end
 
