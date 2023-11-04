@@ -110,7 +110,17 @@ module lpc (
             cycle_count_left <= 4'h0;
             done <= 1'b0;
             lframe <= 1'b0;
+            lad_oe <= 1'b0;
         end else begin
+            case (cycle)
+                CYCLE_DATA: begin
+                    case (cycle_count_left)
+                        1: read_data[3:0] <= lad_in;
+                        0: read_data[7:4] <= lad_in;
+                    endcase
+                end
+            endcase
+
             cycle <= next_cycle;
             cycle_count_left <= next_cycle_count_left;
             lframe <= next_lframe;
@@ -120,44 +130,44 @@ module lpc (
     always @(cycle, cycle_count_left) begin
         case (cycle)
             CYCLE_START: begin
-                lad_oe = 1'b1;
-                lad_out = 4'b0000;
+                lad_oe <= 1'b1;
+                lad_out <= 4'b0000;
             end
 
             CYCLE_CYCTYPE_DIR: begin
-                lad_out = {cyctype, dir, 1'b0};
+                lad_out <= {cyctype, dir, 1'b0};
             end
 
             CYCLE_ADDR: begin
                 case (cycle_count_left)
-                    7: lad_out = addr[31:28];
-                    6: lad_out = addr[27:24];
-                    5: lad_out = addr[23:20];
-                    4: lad_out = addr[19:16];
-                    3: lad_out = addr[15:12];
-                    2: lad_out = addr[11:8];
-                    1: lad_out = addr[7:4];
-                    0: lad_out = addr[3:0];
+                    7: lad_out <= addr[31:28];
+                    6: lad_out <= addr[27:24];
+                    5: lad_out <= addr[23:20];
+                    4: lad_out <= addr[19:16];
+                    3: lad_out <= addr[15:12];
+                    2: lad_out <= addr[11:8];
+                    1: lad_out <= addr[7:4];
+                    0: lad_out <= addr[3:0];
                 endcase
             end
 
             CYCLE_DATA: begin
                 case (cycle_count_left)
-                    1: lad_out = write_data[3:0];
-                    0: lad_out = write_data[7:4];
+                    1: lad_out <= write_data[3:0];
+                    0: lad_out <= write_data[7:4];
                 endcase
             end
 
             CYCLE_TAR_0: begin
                 if (cycle_count_left == 0) lad_oe = 1'b0;
-                else lad_out = 4'b1111;
+                else lad_out <= 4'b1111;
             end
 
             CYCLE_TAR_1: begin
             end
 
             CYCLE_SYNC: begin
-                lad_out = 4'b0000;
+                lad_out <= 4'b0000;
             end
         endcase
     end

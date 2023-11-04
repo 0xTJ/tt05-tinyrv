@@ -2,16 +2,10 @@ import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import RisingEdge, FallingEdge, Timer, ClockCycles
 
-# last_lframe = 1
-# last_lad = 0xF
-lframe = 0
-peri_lad = 0xF
-peri_lad_oe = 0x0
-
 def lpc_lframe(dut):
     return ((dut.uo_out.value >> 0) & 0x1) != 0x1
 
-def lpc_lad(dut):
+def lpc_lad(dut, peri_lad, peri_lad_oe):
     dut_lad = (dut.uio_out.value >> 0) & 0xF
     dut_lad_oe = (dut.uio_oe.value >> 0) & 0xF
     no_lad_oe = (~(dut_lad_oe | peri_lad_oe)) & 0xF
@@ -29,23 +23,31 @@ async def test_my_design(dut):
     await ClockCycles(dut.clk, 5)
     dut.rst_n.value = 1 # take out of reset
 
-    lad = lpc_lad(dut)
+    lframe = 0
+    peri_lad = 0xF
+    peri_lad_oe = 0x0
+
+    lad = lpc_lad(dut, peri_lad, peri_lad_oe)
 
     last_lad = lad
+    dut.uio_in.value = lpc_lad(dut, peri_lad, peri_lad_oe)
     await ClockCycles(dut.clk, 1)
-    lad = lpc_lad(dut)
+    lad = lpc_lad(dut, peri_lad, peri_lad_oe)
     lframe = lpc_lframe(dut)
+
 
     while not lframe:
         last_lad = lad
+        dut.uio_in.value = lpc_lad(dut, peri_lad, peri_lad_oe)
         await ClockCycles(dut.clk, 1)
-        lad = lpc_lad(dut)
+        lad = lpc_lad(dut, peri_lad, peri_lad_oe)
         lframe = lpc_lframe(dut)
         
     while lframe:
         last_lad = lad
+        dut.uio_in.value = lpc_lad(dut, peri_lad, peri_lad_oe)
         await ClockCycles(dut.clk, 1)
-        lad = lpc_lad(dut)
+        lad = lpc_lad(dut, peri_lad, peri_lad_oe)
         lframe = lpc_lframe(dut)
 
     # Now we are after rising edge in CYCTYPE/DIR
@@ -56,8 +58,9 @@ async def test_my_design(dut):
     addr = 0
     for i in range(8):
         last_lad = lad
+        dut.uio_in.value = lpc_lad(dut, peri_lad, peri_lad_oe)
         await ClockCycles(dut.clk, 1)
-        lad = lpc_lad(dut)
+        lad = lpc_lad(dut, peri_lad, peri_lad_oe)
         lframe = lpc_lframe(dut)
         assert lframe == False
 
@@ -67,20 +70,68 @@ async def test_my_design(dut):
     if cyc_dir == 0:
         # Read
         last_lad = lad
+        dut.uio_in.value = lpc_lad(dut, peri_lad, peri_lad_oe)
         await ClockCycles(dut.clk, 1)
-        lad = lpc_lad(dut)
+        lad = lpc_lad(dut, peri_lad, peri_lad_oe)
+        lframe = lpc_lframe(dut)
+        assert lframe == False
+        assert lad == 0xF
+
+        last_lad = lad
+        dut.uio_in.value = lpc_lad(dut, peri_lad, peri_lad_oe)
+        await ClockCycles(dut.clk, 1)
+        lad = lpc_lad(dut, peri_lad, peri_lad_oe)
+        lframe = lpc_lframe(dut)
+        assert lframe == False
+        assert lad == 0xF
+
+        peri_lad = 0x0
+        peri_lad_oe = 0xF
+
+        last_lad = lad
+        dut.uio_in.value = lpc_lad(dut, peri_lad, peri_lad_oe)
+        await ClockCycles(dut.clk, 1)
+        lad = lpc_lad(dut, peri_lad, peri_lad_oe)
         lframe = lpc_lframe(dut)
         assert lframe == False
 
-        assert lad == 0xF
+        peri_lad = 0xA
+
+        last_lad = lad
+        dut.uio_in.value = lpc_lad(dut, peri_lad, peri_lad_oe)
+        await ClockCycles(dut.clk, 1)
+        lad = lpc_lad(dut, peri_lad, peri_lad_oe)
+        lframe = lpc_lframe(dut)
+        assert lframe == False
+
+        peri_lad = 0x5
+
+        last_lad = lad
+        dut.uio_in.value = lpc_lad(dut, peri_lad, peri_lad_oe)
+        await ClockCycles(dut.clk, 1)
+        lad = lpc_lad(dut, peri_lad, peri_lad_oe)
+        lframe = lpc_lframe(dut)
+        assert lframe == False
+
+        peri_lad = 0xF
+
+        last_lad = lad
+        dut.uio_in.value = lpc_lad(dut, peri_lad, peri_lad_oe)
+        await ClockCycles(dut.clk, 1)
+        lad = lpc_lad(dut, peri_lad, peri_lad_oe)
+        lframe = lpc_lframe(dut)
+        assert lframe == False
+
+        peri_lad_oe = 0x0
 
     else:
         # Write
         data = 0
         for i in range(2):
             last_lad = lad
+            dut.uio_in.value = lpc_lad(dut, peri_lad, peri_lad_oe)
             await ClockCycles(dut.clk, 1)
-            lad = lpc_lad(dut)
+            lad = lpc_lad(dut, peri_lad, peri_lad_oe)
             lframe = lpc_lframe(dut)
             assert lframe == False
 
