@@ -1,9 +1,12 @@
 module risc16 (
-    output wire [15:0] imem_addr,
-    input  wire [15:0] imem_data_out,
+    output reg  [15:0] pc,
+    input  wire [15:0] instr,
+
     output wire [15:0] dmem_addr,
     output wire [15:0] dmem_data_in,
     input  wire [15:0] dmem_data_out,
+    output wire        dmem_we,
+
     input  wire        ena,     // will go high when the design is enabled
     input  wire        clk,     // clock
     input  wire        rst_n    // reset_n - low to reset
@@ -17,10 +20,8 @@ module risc16 (
     localparam MUX_TGT_DMEM  = 2'b10;
     localparam MUX_TGT_PC    = 2'b11;
 
-    wire [15:0] instr;
-    assign instr = imem_data_out;
+    assign dmem_we = we_dmem;
 
-    reg [15:0] pc;
     reg [15:0] pc_plus_one;
     reg [15:0] pc_next;
     assign pc_plus_one = pc + 15'b1;
@@ -31,7 +32,6 @@ module risc16 (
         MUX_PC_JUMP: pc_next = alu_result;
         endcase
     end
-    assign imem_addr = pc;
 
     wire eq;
 
